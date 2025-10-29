@@ -1,0 +1,121 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Desafio do Parto — Versão Offline Didática</title>
+<style>
+  :root{--bg:#0b1220;--card:#071226;--accent:#06b6d4;--muted:#9fb3bd}
+  *{box-sizing:border-box}
+  body{margin:0;font-family:Inter, system-ui, -apple-system, 'Segoe UI', Roboto, Arial; background:linear-gradient(180deg,#051018 0%,#071826 100%);color:#e6f7fb;min-height:100vh;display:flex;align-items:center;justify-content:center;padding:18px}
+  .app{width:100%;max-width:980px}
+  header{display:flex;align-items:center;gap:16px;margin-bottom:14px}
+  .logo{width:64px;height:64px;border-radius:12px;background:linear-gradient(135deg,var(--accent),#2dd4bf);display:flex;align-items:center;justify-content:center;font-weight:700;color:#052025}
+  h1{margin:0;font-size:1.25rem}
+  p.lead{margin:6px 0 0;color:var(--muted)}
+  .card{background:linear-gradient(180deg,var(--card), rgba(255,255,255,0.02));border-radius:12px;padding:18px;box-shadow:0 8px 30px rgba(2,6,23,0.6)}
+  .center{display:flex;align-items:center;justify-content:center}
+  button{background:var(--accent);border:0;padding:10px 14px;border-radius:10px;color:#042027;font-weight:700;cursor:pointer}
+  button.secondary{background:transparent;color:var(--accent);border:1px solid rgba(255,255,255,0.06)}
+  .meta{display:flex;gap:10px;flex-wrap:wrap;margin-top:6px}
+  .small{font-size:0.9rem;color:var(--muted)}
+  .question-area{display:grid;gap:12px}
+  .image-wrap{display:flex;align-items:center;justify-content:center;background:rgba(255,255,255,0.02);border-radius:10px;padding:8px}
+  img.ill{max-width:100%;height:auto;border-radius:8px}
+  .question{font-size:1.08rem}
+  .choices{display:grid;gap:10px}
+  .choice{background:rgba(255,255,255,0.03);padding:12px;border-radius:10px;cursor:pointer;border:1px solid transparent}
+  .choice:hover{border-color:rgba(255,255,255,0.06)}
+  .choice.correct{outline:3px solid rgba(34,197,94,0.14);background:linear-gradient(90deg, rgba(16,185,129,0.06), transparent)}
+  .choice.wrong{outline:3px solid rgba(239,68,68,0.12);background:linear-gradient(90deg, rgba(239,68,68,0.04), transparent)}
+  .footer{display:flex;align-items:center;justify-content:space-between;margin-top:12px}
+  .progress{height:10px;background:rgba(255,255,255,0.03);border-radius:999px;overflow:hidden;flex:1;margin-right:12px}
+  .progress > i{display:block;height:100%;background:linear-gradient(90deg,var(--accent),#6ee7b7);width:0%}
+  .timer{font-weight:800;color:#ffd166}
+  .score{min-width:140px;text-align:right;color:var(--muted)}
+  footer .note{margin-top:10px;color:var(--muted);font-size:0.85rem}
+  @media (max-width:640px){.logo{width:56px;height:56px}.card{padding:12px}}
+</style>
+</head>
+<body>
+<main class="app">
+  <header>
+    <div class="logo">DP</div>
+    <div>
+      <h1>Desafio do Parto — Versão Offline Didática</h1>
+      <p class="lead">Quiz com imagens didáticas reais, sons leves padrão, timer e ranking final.</p>
+    </div>
+  </header>
+
+  <section class="card" id="card">
+
+    <div id="startScreen">
+      <h2>Como jogar</h2>
+      <p class="small">10 perguntas — 15 segundos por pergunta. Som de alerta aos 5 segundos finais. Pontos: 10 por acerto. Imagens reais ilustram cada pergunta.</p>
+      <div class="meta">
+        <div class="small"><b>Público:</b> Estudantes de saúde</div>
+        <div class="small"><b>Modo:</b> Individual, offline</div>
+        <div class="small"><b>Tempo por pergunta:</b> 15s</div>
+      </div>
+      <div style="display:flex;gap:10px;margin-top:12px">
+        <button id="startBtn">Começar o quiz</button>
+        <button id="shuffleBtn" class="secondary">Embaralhar perguntas</button>
+      </div>
+    </div>
+
+    <div id="quizScreen" style="display:none">
+      <div style="display:flex;justify-content:space-between;align-items:center;gap:12px">
+        <div>
+          <div class="small">Pergunta <span id="qIndex">1</span> de <span id="qTotal"></span></div>
+          <div class="question" id="questionText">Pergunta</div>
+        </div>
+        <div style="text-align:right">
+          <div class="small">Pontuação</div>
+          <div style="font-weight:800;font-size:1.1rem" id="score">0</div>
+        </div>
+      </div>
+
+      <div class="image-wrap" style="margin-top:10px">
+        <img id="imageContainer" src="" alt="Imagem didática" style="width:100%;max-height:320px;border-radius:8px" />
+      </div>
+
+      <div class="question-area">
+        <div class="choices" id="choices"></div>
+
+        <div class="footer">
+          <div style="display:flex;align-items:center;gap:12px;flex:1">
+            <div class="progress"><i id="progressBar"></i></div>
+            <div class="timer" id="timerText">15s</div>
+          </div>
+          <div style="display:flex;gap:8px;align-items:center">
+            <button id="nextBtn" class="secondary" disabled>Próxima</button>
+            <button id="quitBtn" class="secondary">Sair</button>
+          </div>
+        </div>
+
+        <div id="explanation" class="small" style="margin-top:8px;display:none"></div>
+      </div>
+    </div>
+
+    <div id="endScreen" style="display:none">
+      <h2>Resultado</h2>
+      <p id="finalText" class="small"></p>
+      <div style="display:flex;gap:10px;margin-top:10px">
+        <button id="retryBtn">Reiniciar</button>
+        <button id="reviewBtn" class="secondary">Revisar respostas</button>
+      </div>
+      <div id="reviewArea" style="display:none;margin-top:12px"></div>
+    </div>
+
+  </section>
+
+  <footer style="text-align:center;margin-top:12px;color:var(--muted)">
+    <div class="note">Offline — imagens reais e sons leves padrão.</div>
+  </footer>
+</main>
+
+<script>
+// Aqui você poderá atualizar o JS para carregar imagens reais via src em imageContainer.src ao invés de SVG.
+</script>
+</body>
+</html>
